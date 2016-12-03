@@ -34,11 +34,10 @@ app.get("/", helloWorld)
 说起中间这个概念，显然要有起始两端，不然中间一词从何说起？  
 其中一端是http client发起的请求，另一端是http server对请求的处理，中间件的作用就是在这两端之间的某个环节中搞一搞。在我目前的理解看来，中间件只是一种划分模块的方式，可以让模块处在某个合适的层次中。  
 <br/>
-echo在对Middleware的处理上挺有意思的，用了golang中的``闭包``特性来实现多个Middlewares和最终处理函数间的``链式调用``，可以在```echo.ServeHTTP```方法中看到具体的相关流程。  
+echo在对Middleware的处理上挺有意思的，用了golang中的``闭包``特性来实现多个Middlewares和最终处理函数间的``链式调用``，可以在```echo.ServeHTTP```方法中看到相关的处理。  
+为了实现``链式调用``，echo需要一视同仁的对待Middlewares中的处理函数和用户自己定义的处理函数，在echo中，这两者都是echo.HandlerFunc类型。  
 <br/>
-为了实现``链式调用``，echo需要一视同仁的对待Middlewares的处理函数和用户自己定义的处理函数，在echo中，这两者都是echo.HandlerFunc类型。  
-<br/>
-另外echo中还有个Premiddleware的概念，和Middleware的区别是作用的时机有所不同，Premiddlewares作用于Router匹配路由之前，而Middlewares作用于之后。这样一来，就可以在Premiddlewares中做一些可以影响到路由规则的事情，比如处理那个著名的```/user/:username```，哈哈哈。我的 [go-web](https://github.com/SkylakeCoder/go-web "") 项目中也处理过```/user/:username```，我当时的设计：[PatternHandler](https://github.com/SkylakeCoder/go-web/blob/master/web/pattern.go "") 机制也不算太差，但是和Premiddlewares机制相比，就不禁有种膝盖一软的感觉。  
+另外echo中还有个Premiddleware的概念，和Middleware的区别是作用的时机有所不同，Premiddlewares作用于Router匹配路由之前，Middlewares作用于之后。这样一来，就可以在Premiddlewares中做一些可以影响到路由规则的事情，比如处理HTTP请求的重定向。  
 <br/>
 最后贴上一段代码，聊表敬意！
 ```go
