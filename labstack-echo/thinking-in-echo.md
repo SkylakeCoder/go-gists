@@ -40,7 +40,7 @@ echo在对Middleware的处理上挺有意思的，用了golang中的``闭包``�
 <br/>
 另外echo中还有个Premiddleware的概念，和Middleware的区别是作用的时机有所不同，Premiddlewares作用于Router匹配路由之前，而Middlewares作用于之后。这样一来，就可以在Premiddlewares中做一些可以影响到路由规则的事情，比如处理那个著名的```/user/:username```，哈哈哈。我的 [go-web](https://github.com/SkylakeCoder/go-web "") 项目中也处理过```/user/:username```，我当时的设计：[PatternHandler](https://github.com/SkylakeCoder/go-web/blob/master/web/pattern.go "") 机制也不算太差，但是和Premiddlewares机制相比，就不禁有种膝盖一软的感觉。  
 <br/>
-关于echo Middleware的描述即将结束，又到了发表获奖感言的时候了。。。我要感谢echo的Middlewares，感谢你们给我带来了一段美好的午后时光，多年以后，我想起那天下午雾霾下的Coding，那是我逝去的青春。最后贴上一段代码，聊表敬意！
+最后贴上一段代码，聊表敬意！
 ```golang
     // Middleware
     h := func(c Context) error {
