@@ -110,8 +110,10 @@ echo模块中有一系列的路由注册方法(GET POST ...), 实际的路由注
 
 ---
 ## echo中使用的graceful.Server
-echo用了graceful.Server, 没有直接去用原生的http.Server. 那graceful.Server比原生的好在哪呢？尚未调查过，[graceful](https://github.com/tylerb/graceful) 自己的说法是：graceful可以优雅的关掉服务。在echo中设置ShutdownTimeout然后通过graceful来起作用，另外从示例来看，graceful还可以监测连接的状态。
+echo用了graceful.Server, 没有直接去用原生的http.Server. 那graceful.Server比原生的好在哪呢？尚未调查过，[graceful](https://github.com/tylerb/graceful) 自己的说法是：graceful可以优雅的关掉服务。另外从示例中看到，graceful还可以监测连接的状态变化。
 
 ---
 ## echo中的Binder
-TODO...
+echo.Context中的Bind方法可以将请求中附带的数据绑定映射到某个特定的结构体中，从而方便数据的提取工作，可以从binder.go的实现中学习下golang的反射编程，其它的就没什么好说的了。
+
+---
