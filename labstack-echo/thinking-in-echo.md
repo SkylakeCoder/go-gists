@@ -102,11 +102,13 @@ echo模块中有一系列的路由注册方法(GET POST ...), 实际的路由注
         methodHandler *methodHandler
     }
     ```
-    节点中的parent属性，router并没有去真正的使用，并且维护parent属性的代码中还有Bug，不过不会影响到什么。  
-    节点中的methodHandler属性，只有叶子节点中的才是有效值，这个属性的作用是将method+path和具体的HandlerFunc关联起来。至此路由的注册工作就完成了。
+    - kind : 三种类型，skind(静态资源类型) + pkind(参数类型) + akind(任意类型)
+    - label : 加速字符串匹配的小计俩。
+    - parent : router并没有去真正的使用，并且维护parent属性的代码中还有bug，不过不会影响到什么。  
+    - methodHandler : 只有叶子节点中的才是有效值，这个属性的作用是将method+path和具体的HandlerFunc关联起来。至此路由的注册工作就完成了。
 
 - 路由的查找  
-    查找是根据method+path,从前缀树中找到特定的node，然后用node中的数据来填充Context，具体的实现中遍历树和处理特殊路由规则的逻辑混杂在一起，读起来比较头疼，就不详细展开了。。。
+    查找是根据method+path,从前缀树中找到特定的node，然后用node中的数据来填充Context，具体的实现中遍历树和处理特殊路由规则的逻辑混杂在一起，读起来比较头疼，就不细说了。。。
 
 ---
 ## echo中使用的graceful.Server
