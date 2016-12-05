@@ -68,19 +68,45 @@ MiddlewareFunc func(HandlerFunc) HandlerFunc
 ## echo中的路由处理
 echo在router.go模块中实现路由功能，一个特色是echo用了```前缀树```结构来实现路由规则的注册和查询。
 
-### echo路由时使用前缀树是否合理？
-我目前认为在http业务层的路由场景下，使用前缀树是不太合理的，因为并没有什么好处。echo之所以选择前缀树而不去用map(golang的是哈希型map)，无非是如下两点原因：
+### echo选择前缀树的原因猜测？
+之所以选择前缀树而不是直接用map(golang中的是哈希型map)，感觉上可能有如下两点原因：
 - 前缀树比哈希型map更省空间？  
   <br/>
-  在我现有的见识看来，web开发中的路由规则再多又能多到哪里去呢？一万条路由规则？好吧，就算如此，也根本不用去操心内存占用的大小。  
+  在我现有的见识看来，web开发中的路由规则再多又能多到哪里去呢？一万条路由规则？好吧，就算如此，也根本不用去操心内存占用的问题。  
   <br/>
 - 最坏情况下，前缀树的查找性能优于哈希型map？  
   <br/>
   理论上如此，但既然echo是使用前缀树来处理路由，那咱就考虑http路由的情景，在这种情景下，前缀树的查找性能真的比哈希型map要强？  
   实际测试一下吧，就测试前缀树 和 ```map[string]bool``` 这两者到底谁的查找速度更快，具体测试代码见[这里](https://github.com/SkylakeCoder/go-gists/tree/master/radixtree "")，先说结论，在我的测试中，前缀树的查找性能``远远不如``golang中的map。。。  
-  另外在写测试时，我本想直接精简echo router.go中的代码，摘出一段干净能用的前缀树来，但在具体的实现中，操作前缀树的代码与处理路由的代码交织在一起，还有一些```goto```...最后只成功摘取了insert方法，测试中前缀树的Find方法我是自行实现的，但是不用担心效率问题，肯定大概不会比echo原有的差。
+  另外在写测试时，我本想直接精简echo router.go中的代码，摘出一段干净能用的前缀树来，但在具体的实现中，操作前缀树的代码与处理路由的代码交织在一起，还有一些```goto```...最后只成功摘取了insert方法，测试中前缀树的Find方法我是自行实现的，但是不用担心效率问题，不太可能会比echo原有的实现差。
 
-上述原因如果在http路由场景下都不适用的话，那似乎就可以认为echo在路由时选择前缀树并不是合理的选择，而且带来了明显的坏处，就是router.go的代码可读性变差。
+上述原因如果在http路由场景下都不适用的话，那是否可以认为echo在路由时选择前缀树并不是合理的选择？并且带来了明显的坏处，就是router.go的代码可读性变的很差。
+
+### echo选择前缀树的真正原因？
+我问了一朋友对这个问题的看法，他认为：使用前缀树可以更方便的处理url中的Pattern，在pattern复杂时，map就不一定比前缀树快了。  
+应该是如此，echo的确是在树的遍历过程中同时处理了一些pattern，比如那个著名的 ``/user/:username`` pattern. 我在[go-web](https://github.com/SkylakeCoder/go-web)项目中也处理过这个pattern，我的处理方式没有echo快，但在结构上比echo要好，见这里：[PatternHandler](https://github.com/SkylakeCoder/go-web/blob/master/web/pattern.go)
+
+### echo的路由总结
+- 路由的注册  
+echo在服务启动之前，会完成所有路由的注册工作。  
+echo模块中有一系列的路由注册方法(GET POST ...), 实际的路由注册工作由router模块来完成，围绕着路由path来维护一棵字符串前缀树，这棵树中的节点类型是如下的node结构体：
+    ```go
+    node struct {
+        kind          kind
+        label         byte
+        prefix        string
+        parent        *node
+        children      children
+        ppath         string
+        pnames        []string
+        methodHandler *methodHandler
+    }
+    ```
+    节点中的parent属性，router并没有去真正的使用，并且维护parent属性的代码中还有Bug，不过不会影响到什么。  
+    节点中的methodHandler属性，只有叶子节点中的才是有效值，这个属性的作用是将method+path和具体的HandlerFunc关联起来。至此路由的注册工作就完成了。
+
+- 路由的查找  
+    查找是根据method+path,从前缀树中找到特定的node，然后用node中的数据来填充Context，具体的实现中遍历树和处理特殊路由规则的逻辑混杂在一起，读起来比较头疼，就不详细展开了。。。
 
 ---
 ## echo中使用的graceful.Server
